@@ -24,5 +24,8 @@ module.exports = app => {
   // Create a new Tutorial
   router.delete("/", tutorials.deleteAll);
 
+  //
+  router.get("/:start/:end", tutorials.getEasterByYear);
+
   app.use('/api/tutorials', router);
 };

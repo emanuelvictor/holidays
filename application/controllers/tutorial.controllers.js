@@ -35,9 +35,9 @@ exports.create = (req, res) => {
 // Retrieve all Tutorials from the database.
 exports.findAll = (req, res) => {
   const title = req.query.title;
-  var condition = title ? { title: { [Op.iLike]: `%${title}%` } } : null;
+  var condition = title ? {title: {[Op.iLike]: `%${title}%`}} : null;
 
-  Tutorial.findAll({ where: condition })
+  Tutorial.findAll({where: condition})
     .then(data => {
       res.send(data);
     })
@@ -69,7 +69,7 @@ exports.update = (req, res) => {
   const id = req.params.id;
 
   Tutorial.update(req.body, {
-    where: { id: id }
+    where: {id: id}
   })
     .then(num => {
       if (num == 1) {
@@ -94,7 +94,7 @@ exports.delete = (req, res) => {
   const id = req.params.id;
 
   Tutorial.destroy({
-    where: { id: id }
+    where: {id: id}
   })
     .then(num => {
       if (num == 1) {
@@ -121,7 +121,7 @@ exports.deleteAll = (req, res) => {
     truncate: false
   })
     .then(nums => {
-      res.send({ message: `${nums} Tutorials were deleted successfully!` });
+      res.send({message: `${nums} Tutorials were deleted successfully!`});
     })
     .catch(err => {
       res.status(500).send({
@@ -133,7 +133,7 @@ exports.deleteAll = (req, res) => {
 
 // Find all published Tutorials
 exports.findAllPublished = (req, res) => {
-  Tutorial.findAll({ where: { published: true } })
+  Tutorial.findAll({where: {published: true}})
     .then(data => {
       res.send(data);
     })
@@ -144,3 +144,28 @@ exports.findAllPublished = (req, res) => {
       });
     });
 };
+
+// Must be in sequelize orm
+exports.getEasterByYear = async (request, response) => {
+
+  const start = request.params.start;
+
+  const end = request.params.end;
+
+  const {QueryTypes} = require('sequelize');
+
+  let result = await db.sequelize.query(
+    'SELECT\n' +
+    '    year,\n' +
+    '    get_easter_by_year( year ) as easter\n' +
+    'FROM\n' +
+    '    generate_series( ' + start + ', ' + end + ') AS year\n' +
+    'ORDER BY\n' +
+    '    year;',
+    {
+      type: QueryTypes.SELECT
+    }
+  );
+
+  response.status(200).json(result)
+}

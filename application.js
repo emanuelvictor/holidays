@@ -16,13 +16,12 @@ app.use(bodyParser.json());
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({extended: true}));
 
-// // simple route
-// app.get("/", (req, res) => {
-//   res.json({message: "Welcome to bezkoder application."});
-// });
-
 const db = require("./domain/entities");
 db.sequelize.sync();
+
+// Create custom functions
+const customFunctions = require("./infrastructure/db/custom-functions");
+customFunctions.createGetEasterByYear();
 
 require("./application/routes/turorial.routes")(app);
 
