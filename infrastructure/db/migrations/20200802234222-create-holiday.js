@@ -17,24 +17,22 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       createdAt: {
-        field: 'created_at',
         allowNull: false,
         type: Sequelize.DATE
       },
       updatedAt: {
-        field: 'updated_at',
         allowNull: false,
         type: Sequelize.DATE
       },
-      regionId: {
-        field: 'region_id',
+      regionCode: {
+        field: 'region_code',
         type: Sequelize.DataTypes.INTEGER,
         references: {
           model: {
             tableName: 'region',
             schema: 'public'
           },
-          key: 'id'
+          key: 'code'
         },
         allowNull: false
       },

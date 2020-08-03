@@ -21,7 +21,6 @@ const db = {};
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
-db.tutorials = require("./tutorial.model")(sequelize, Sequelize);
 db.regions = require("./region.model")(sequelize, Sequelize);
 db.holidays = require("./holiday.model")(sequelize, Sequelize);
 

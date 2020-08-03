@@ -23,7 +23,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 // const customFunctions = require("./infrastructure/db/custom-functions");
 // customFunctions.createGetEasterByYear();
 
-require("./application/routes/turorial.routes")(app);
+require("./application/routes/holiday.routes")(app);
 
 // set port, listen for requests
 const PORT = process.env.PORT || 8080;

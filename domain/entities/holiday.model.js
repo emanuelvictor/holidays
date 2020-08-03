@@ -29,12 +29,12 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       validate: { min: 1, max: 31 },
     },
-    regionId: {
-      field: 'region_id',
+    regionCode: {
+      field: 'region_code',
       type: DataTypes.INTEGER,
       references: {
         model: 'region',
-        key: 'id'
+        key: 'code'
       },
     },
   }, {

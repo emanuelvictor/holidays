@@ -13,16 +13,22 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   Region.init({
+    code: {
+      allowNull: false,
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
+    },
     name: {
       allowNull: false,
       type: DataTypes.STRING,
     },
-    upperRegionId: {
-      field: 'upper_region_id',
+    upperRegionCode: {
+      field: 'upper_region_code',
       type: DataTypes.INTEGER,
       references: {
         model: Region,
-        key: 'id'
+        key: 'code'
       }
     },
   }, {

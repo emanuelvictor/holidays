@@ -2,35 +2,33 @@
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     await queryInterface.createTable('region', {
-      id: {
+      code: {
         allowNull: false,
-        autoIncrement: true,
+        type: Sequelize.INTEGER,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        autoIncrement: true,
       },
       name: {
         allowNull: false,
         type: Sequelize.STRING
       },
       createdAt: {
-        field: 'created_at',
         allowNull: false,
         type: Sequelize.DATE
       },
       updatedAt: {
-        field: 'updated_at',
         allowNull: false,
         type: Sequelize.DATE
       },
-      upperRegionId: {
-        field: 'upper_region_id',
+      upperRegionCode: {
+        field: 'upper_region_code',
         type: Sequelize.DataTypes.INTEGER,
         references: {
           model: {
             tableName: 'region',
             schema: 'public'
           },
-          key: 'id'
+          key: 'code'
         },
         allowNull: true
       },
