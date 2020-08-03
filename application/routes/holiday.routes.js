@@ -1,6 +1,5 @@
 module.exports = app => {
   const holidays = require("../controllers/holiday.controllers");
-  const regions = require("../controllers/region.controllers");
 
   const router = require("express").Router();
 
@@ -26,13 +25,7 @@ module.exports = app => {
   router.delete("/holidays/", holidays.deleteAll);
 
   //
-  router.get("/holidays/:start/:end", holidays.getEasterByYear);  
+  router.get("/holidays/:start/:end", holidays.getEasterByYear);
 
-  //
-  router.get("/regions", regions.findAll);
-
-  //
-  router.get("/regions/:code", regions.findOne);
-
-  app.use('/api', router);
+  app.use(router);
 };

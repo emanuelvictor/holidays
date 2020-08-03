@@ -24,9 +24,10 @@ app.use(bodyParser.urlencoded({extended: true}));
 // customFunctions.createGetEasterByYear();
 
 require("./application/routes/holiday.routes")(app);
+require("./application/routes/region.routes")(app);
 
 // set port, listen for requests
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}.`);
 });
