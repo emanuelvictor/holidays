@@ -24,10 +24,6 @@
     "express": "^4.17.1",
     "pg": "^8.3.0",
     "pg-hstore": "^2.3.3",
-    "forever": "^3.0.0",
     "sequelize": "^6.3.3"
-  },
-  "devDependencies": {
-    "forever": "^3.0.0"
   }
 }
