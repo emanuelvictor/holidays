@@ -20,8 +20,7 @@ module.exports = {
       '    day := L + 28 - 31 * ( trunc( month / 4 ) );\n' +
       '    RETURN to_date( to_char( day, \'00\') || to_char( month, \'00\') || to_char( year,\'0000\'), \'DDMMYYYY\');\n',
       [
-        'IMMUTABLE',
-        'LEAKPROOF'
+        'IMMUTABLE'
       ],
       {
         variables:
