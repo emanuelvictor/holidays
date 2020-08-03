@@ -23,6 +23,12 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       type: DataTypes.STRING,
     },
+    carnival: {
+      type: DataTypes.BOOLEAN
+    },
+    corpus_christi: {
+      type: DataTypes.BOOLEAN
+    },
     upperRegionCode: {
       field: 'upper_region_code',
       type: DataTypes.INTEGER,

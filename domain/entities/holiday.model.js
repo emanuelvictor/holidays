@@ -19,6 +19,10 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   Holiday.init({
+    name: {
+      allowNull: false,
+      type: DataTypes.STRING,
+    },
     year: {
       allowNull: false,
       type: DataTypes.INTEGER,
