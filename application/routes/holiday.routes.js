@@ -26,7 +26,7 @@ module.exports = app => {
   router.delete("/holidays/", holidays.deleteAll);
 
   //
-  router.get("/holidays/:start/:end", holidays.getEasterByYear);
+  router.get("/holidays/:start/:end", holidays.getEasterByYear);  
 
   //
   router.get("/regions", regions.findAll);
