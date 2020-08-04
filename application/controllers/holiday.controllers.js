@@ -17,18 +17,54 @@ exports.findAll = (req, res) => {
 };
 
 // Find a single Holiday with an id
-exports.findOne = (req, res) => {
-  const id = req.params.id;
+exports.find = async (req, res) => {
+  let code = req.params.code;
+  const date = req.params.date;
+  const month = date.substring(5, 7);
+  const day = date.substring(8, 10);
 
-  Holiday.findByPk(id)
-    .then(data => {
-      res.send(data);
-    })
-    .catch(err => {
-      res.status(500).send({
-        message: "Error retrieving Holiday with id=" + id
-      });
+  const [holiday] = await Holiday.findAll({
+    where: {regionCode: code, month: month, day: day}
+  });
+
+  // If found holiday with this regionCode
+  if (holiday) {
+    res.status(200).send(holiday);
+    return
+  }
+
+  // If holiday was not found and regionCode it's a code of city
+  if (code.length > 2) {
+    // So find the holiday in states
+    const stateRegionCode = code.substring(0, 2);
+    const [stateHoliday] = await Holiday.findAll({
+      where: {regionCode: stateRegionCode, month: month, day: day}
     });
+
+    // If exists state holiday, so must return a 403 http code. It is not possible to remove a state holiday from the city.
+    if (stateHoliday) {
+      res.status(200).send(stateHoliday);
+      return
+    } else
+      code = stateRegionCode
+  }
+
+  // If holiday was not found and regionCode it's a code of state
+  if (code.length === 2) {
+    // So find the holiday in states
+    const nationalRegionCode = 1;
+    const [nationalHoliday] = await Holiday.findAll({
+      where: {regionCode: nationalRegionCode, month: month, day: day}
+    });
+
+    // If exists a national holiday, so must return a 403 http code. It is not possible to remove a national holiday from the state.
+    if (nationalHoliday) {
+      res.status(200).send(nationalHoliday);
+      return
+    }
+  }
+
+  res.status(404).send()
 };
 
 // Update a Holiday by the id in the request
@@ -65,81 +101,61 @@ exports.update = async (req, res) => {
     res.status(200).send(holiday);
   }
 
-  // Holiday.update(req.body, {
-  //   where: {id: id}
-  // })
-  //   .then(num => {
-  //     if (num === 1) {
-  //       res.send({
-  //         message: "Holiday was updated successfully."
-  //       });
-  //     } else {
-  //       res.send({
-  //         message: `Cannot update Holiday with id=${id}. Maybe Holiday was not found or req.body is empty!`
-  //       });
-  //     }
-  //   })
-  //   .catch(err => {
-  //     res.status(500).send({
-  //       message: "Error updating Holiday with id=" + id
-  //     });
-  //   });
 };
 
 // Delete a Holiday with the specified id in the request
-exports.delete = (req, res) => {
-  const id = req.params.id;
+exports.delete = async (req, res) => {
 
-  Holiday.destroy({
-    where: {id: id}
-  })
-    .then(num => {
-      if (num === 1) {
-        res.send({
-          message: "Holiday was deleted successfully!"
-        });
-      } else {
-        res.send({
-          message: `Cannot delete Holiday with id=${id}. Maybe Holiday was not found!`
-        });
-      }
-    })
-    .catch(err => {
-      res.status(500).send({
-        message: "Could not delete Holiday with id=" + id
-      });
-    });
-};
+  let code = req.params.code;
+  const date = req.params.date;
+  const month = date.substring(0, 2);
+  const day = date.substring(3, 5);
 
-// Delete all Holidays from the database.
-exports.deleteAll = (req, res) => {
-  Holiday.destroy({
-    where: {},
-    truncate: false
-  })
-    .then(nums => {
-      res.send({message: `${nums} Holidays were deleted successfully!`});
-    })
-    .catch(err => {
-      res.status(500).send({
-        message:
-          err.message || "Some error occurred while removing all holidays."
-      });
-    });
-};
+  const [holiday] = await Holiday.findAll({
+    where: {regionCode: code, month: month, day: day}
+  });
 
-// Find all published Holidays
-exports.findAllPublished = (req, res) => {
-  Holiday.findAll({where: {published: true}})
-    .then(data => {
-      res.send(data);
-    })
-    .catch(err => {
-      res.status(500).send({
-        message:
-          err.message || "Some error occurred while retrieving holidays."
-      });
+  // If found holiday with this regionCode
+  if (holiday) {
+    await Holiday.destroy({
+      where: {id: holiday.id}
     });
+    res.status(204).send();
+    return
+  }
+
+  // If holiday was not found and regionCode it's a code of city
+  if (code.length > 2) {
+    // So find the holiday in states
+    const stateRegionCode = code.substring(0, 2);
+    const [stateHoliday] = await Holiday.findAll({
+      where: {regionCode: stateRegionCode, month: month, day: day}
+    });
+
+    // If exists state holiday, so must return a 403 http code. It is not possible to remove a state holiday from the city.
+    if (stateHoliday) {
+      res.status(403).send();
+      return
+    } else
+      code = stateRegionCode
+  }
+
+  // If holiday was not found and regionCode it's a code of state
+  if (code.length === 2) {
+    // So find the holiday in states
+    const nationalRegionCode = 1;
+    const [nationalHoliday] = await Holiday.findAll({
+      where: {regionCode: nationalRegionCode, month: month, day: day}
+    });
+
+    // If exists a national holiday, so must return a 403 http code. It is not possible to remove a national holiday from the state.
+    if (nationalHoliday) {
+      res.status(403).send();
+      return
+    }
+  }
+
+  res.status(404).send()
 };
 
 // Must be in sequelize orm

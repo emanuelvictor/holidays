@@ -3,26 +3,17 @@ module.exports = app => {
 
   const router = require("express").Router();
 
-  // Create a new Holiday
-  router.post("/holidays/", holidays.create);
-
   // Retrieve all Holidays
   router.get("/holidays/", holidays.findAll);
 
-  // Retrieve all published Holidays
-  router.get("/holidays/published", holidays.findAllPublished);
-
-  // Retrieve a single Holiday with id
-  router.get("/holidays/:id", holidays.findOne);
+  // Retrieve a holiday
+  router.get("/feriados/:code/:date", holidays.find);
 
   // Update a Holiday with id
   router.put("/feriados/:code/:date", holidays.update);
 
   // Delete a Holiday with id
-  router.delete("/holidays/:id", holidays.delete);
-
-  // Create a new Holiday
-  router.delete("/holidays/", holidays.deleteAll);
+  router.delete("/feriados/:code/:date", holidays.delete);
 
   //
   router.get("/holidays/:start/:end", holidays.getEasterByYear);
