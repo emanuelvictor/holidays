@@ -16,7 +16,7 @@ module.exports = app => {
   router.get("/holidays/:id", holidays.findOne);
 
   // Update a Holiday with id
-  router.put("/holidays/:id", holidays.update);
+  router.put("/feriados/:code/:date", holidays.update);
 
   // Delete a Holiday with id
   router.delete("/holidays/:id", holidays.delete);

@@ -2,36 +2,6 @@ const db = require("../../domain/entities");
 const Holiday = db.holidays;
 const Op = db.Sequelize.Op;
 
-// Create and Save a new Holiday
-exports.create = (req, res) => {
-  // Validate request
-  if (!req.body.year || !req.body.month || !req.body.regionCode) {
-    res.status(400).send({
-      message: "Content can not be empty!"
-    });
-    return;
-  }
-
-  // Create a Holiday
-  const holiday = {
-    month: req.body.name,
-    year: req.body.year,
-    regionCode: req.body.regionCode
-  };
-
-  // Save Holiday in the database
-  Holiday.create(holiday)
-    .then(data => {
-      res.send(data);
-    })
-    .catch(err => {
-      res.status(500).send({
-        message:
-          err.message || "Some error occurred while creating the Holiday."
-      });
-    });
-};
-
 // Retrieve all Holidays from the database.
 exports.findAll = (req, res) => {
   Holiday.findAll()
@@ -62,28 +32,58 @@ exports.findOne = (req, res) => {
 };
 
 // Update a Holiday by the id in the request
-exports.update = (req, res) => {
-  const id = req.params.id;
+exports.update = async (req, res) => {
 
-  Holiday.update(req.body, {
-    where: {id: id}
+  const holidayName = req.body.name;
+  if (!holidayName)
+    res.status(400).send("The holiday name must be informed")
+
+  const code = req.params.code;
+  const date = req.params.date;
+
+  const month = date.substring(0, 2)
+  const day = date.substring(3, 5)
+
+  // Find holiday, if it not found, create them.
+  const [holiday, created] = await Holiday.findOrCreate({
+    where: {regionCode: code, month: month, day: day},
+    defaults: {
+      name: holidayName
+    }
   })
-    .then(num => {
-      if (num === 1) {
-        res.send({
-          message: "Holiday was updated successfully."
-        });
-      } else {
-        res.send({
-          message: `Cannot update Holiday with id=${id}. Maybe Holiday was not found or req.body is empty!`
-        });
-      }
+
+  // If holiday has been created.
+  if (created)
+    res.status(201).send(holiday);
+
+  // If holiday has been found and not created, it must be updated.
+  else {
+    await Holiday.update(req.body, {
+      where: {regionCode: code, month: month, day: day}
     })
-    .catch(err => {
-      res.status(500).send({
-        message: "Error updating Holiday with id=" + id
-      });
-    });
+    holiday.name = holidayName;
+    res.status(200).send(holiday);
+  }
+
+  // Holiday.update(req.body, {
+  //   where: {id: id}
+  // })
+  //   .then(num => {
+  //     if (num === 1) {
+  //       res.send({
+  //         message: "Holiday was updated successfully."
+  //       });
+  //     } else {
+  //       res.send({
+  //         message: `Cannot update Holiday with id=${id}. Maybe Holiday was not found or req.body is empty!`
+  //       });
+  //     }
+  //   })
+  //   .catch(err => {
+  //     res.status(500).send({
+  //       message: "Error updating Holiday with id=" + id
+  //     });
+  //   });
 };
 
 // Delete a Holiday with the specified id in the request

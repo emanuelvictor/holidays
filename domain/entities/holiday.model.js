@@ -23,15 +23,15 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       type: DataTypes.STRING,
     },
-    year: {
+    day: {
       allowNull: false,
       type: DataTypes.INTEGER,
-      validate: { min: 1, max: 9999 }
+      validate: { min: 1, max: 31 }
     },
     month: {
       allowNull: false,
       type: DataTypes.INTEGER,
-      validate: { min: 1, max: 31 },
+      validate: { min: 1, max: 12 },
     },
     regionCode: {
       field: 'region_code',

@@ -12,13 +12,15 @@ module.exports = {
         allowNull: false,
         type: Sequelize.STRING,
       },
-      year: {
+      day: {
         allowNull: false,
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        validate: { min: 1, max: 31 }
       },
       month: {
         allowNull: false,
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        validate: { min: 1, max: 12 },
       },
       createdAt: {
         allowNull: false,
