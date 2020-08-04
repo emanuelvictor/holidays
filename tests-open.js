@@ -104,6 +104,7 @@ export default () => {
       }
     );
   });
+
   group('Corpus Christi Ouro Preto', function () {
     // Cadastro de feriado móvel municipal
     let register = http.put(`${BASE_URL}/feriados/3146107/corpus-christi/`, { headers: HEADERS });
@@ -136,7 +137,41 @@ export default () => {
       }
     );
   });
-  group('Corpus Christi Foz do Iguaçu', function () {
+
+  group('Carnaval Ouro Preto', function () {
+    // Cadastro o carnaval em Ouro Preto
+    let register = http.put(`${BASE_URL}/feriados/3146107/carnival/`, { headers: HEADERS });
+    check(register, {
+      'cadastro retorna status 200 ou 201':
+        (r) => [200, 201].includes(r.status),
+    });
+
+    // Consulto o carnaval em ouro preto
+    let query1 = http.get(`${BASE_URL}/feriados/3146107/2023-02-21/`);
+    check(query1, {
+      'consulta deve retornar 200': (r) => r.status === 200
+    });
+    check(query1.json(),
+      {
+        'é Carnaval em Ouro Preto em 2023-02-21':
+          (obj) => obj.name === 'Carnaval',
+      }
+    );
+
+    // Busca o carnaval em Minas Gerais
+    let query2 = http.get(`${BASE_URL}/feriados/31/2023-02-21/`);
+    check(query2, {
+      'Consulta deve retornar 404': (r) => r.status === 404
+    });
+    check(query2.json(),
+      {
+        'Não é Carnaval em Minas Gerais':
+          (obj) => obj === 'Holiday not found',
+      }
+    );
+  });
+
+  group('Foz do Iguaçu', function () {
 
     // Consulta feriado móvel municipal, feriado não existe para esse município
     let query1 = http.get(`${BASE_URL}/feriados/4108304/2020-06-11/`);
@@ -159,6 +194,30 @@ export default () => {
       {
         'Região Inexistente':
           (obj) => obj === 'Region not found',
+      }
+    );
+
+    // Consulta deve retornar páscoa em Foz do Iguaçu
+    let query3 = http.get(`${BASE_URL}/feriados/4108304/1900-04-15/`);
+    check(query3, {
+      'Procurando a páscoa em Foz do Iguaçu, deve retornar 200': (r) => r.status === 200
+    });
+    check(query3.json(),
+      {
+        'Páscoa':
+          (obj) => obj.name === 'Páscoa'
+      }
+    );
+
+    // Consulta deve retornar páscoa no Paraná
+    let query4 = http.get(`${BASE_URL}/feriados/41/1900-04-15/`);
+    check(query4, {
+      'Procurando a páscoa no Paraná, deve retornar 200': (r) => r.status === 200
+    });
+    check(query4.json(),
+      {
+        'Páscoa':
+          (obj) => obj.name === 'Páscoa'
       }
     );
   });

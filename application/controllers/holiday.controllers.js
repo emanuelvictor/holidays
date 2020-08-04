@@ -3,6 +3,18 @@ const Holiday = db.holidays;
 const Region = db.regions;
 const Op = db.Sequelize.Op;
 
+isEaster = async (date) => {
+  const year = date.substring(0, 4);
+  date = new Date(date.split("-"));
+
+  let easterString = await getEasterByYear(year);
+
+  const dateString = new Date(date).toLocaleDateString()
+  easterString = new Date(easterString.split("-")).toLocaleDateString();
+
+  return dateString === easterString
+};
+
 isGoodFriday = async (date) => {
   const year = date.substring(0, 4);
   date = new Date(date.split("-"));
@@ -51,6 +63,34 @@ getCorpusChristiStringFromEasterString = async (easterString) => {
   return corpusChristi.toLocaleDateString().substring(0, 10); //.replace(/\//g, '-');
 };
 
+
+isCarnival = async function (code, date) {
+  const year = date.substring(0, 4);
+  date = new Date(date.split("-"));
+
+  let easterString = await getEasterByYear(year);
+
+  const dateString = new Date(date).toLocaleDateString()
+  const carnivalString = new Date((await getCarnivalStringFromEasterString(easterString)).split("-")).toLocaleDateString();
+
+  const region = (await Region.findByPk(code));
+
+  if (!region) {
+    return 'Region not found';
+  }
+
+  return region && region.carnival && dateString === carnivalString
+};
+
+getCarnivalStringFromEasterString = async (easterString) => {
+
+  const carnival = new Date(easterString.split("-"));
+
+  carnival.setDate(carnival.getDate() - 47);
+
+  return carnival.toLocaleDateString().substring(0, 10); //.replace(/\//g, '-');
+};
+
 getEasterByYear = async (year) => {
   const {QueryTypes} = require('sequelize');
 
@@ -64,6 +104,31 @@ getEasterByYear = async (year) => {
   return resulted[0].easter
 };
 
+createCorpusChristi = async (req, res) => {
+
+  const region = await Region.findByPk(req.params.code);
+
+  if (region) {
+    await region.update({corpusChristi: true});
+    res.status(200).send(region);
+  } else {
+    res.status(404).send()
+  }
+
+};
+
+createCarnival = async (req, res) => {
+
+  const region = await Region.findByPk(req.params.code);
+
+  if (region) {
+    await region.update({carnival: true});
+    res.status(200).send(region);
+  } else {
+    res.status(404).send()
+  }
+
+};
 
 // Find a single Holiday with an id
 exports.find = async (req, res) => {
@@ -71,7 +136,6 @@ exports.find = async (req, res) => {
   const date = (' ' + req.params.date).slice(1);
   const month = date.substring(5, 7);
   const day = date.substring(8, 10);
-  const year = date.substring(0, 4);
 
   const [holiday] = await Holiday.findAll({
     where: {regionCode: code, month: month, day: day}
@@ -114,6 +178,12 @@ exports.find = async (req, res) => {
     }
   }
 
+  // Verify easter
+  if (await isEaster(date)) {
+    res.status(200).json({name: "Páscoa"});
+    return
+  }
+
   // Verify good friday
   if (await isGoodFriday(date)) {
     res.status(200).json({name: "Sexta-Feira Santa"});
@@ -130,6 +200,13 @@ exports.find = async (req, res) => {
   }
 
   // Verify corpus carnival
+  if ((await isCarnival(req.params.code, date)) === true) {
+    res.status(200).json({name: "Carnaval"});
+    return
+  } else if ((await isCarnival(req.params.code, date)) === 'Region not found') {
+    res.status(400).json('Region not found');
+    return
+  }
 
   res.status(404).json('Holiday not found');
 };
@@ -145,8 +222,12 @@ exports.update = async (req, res) => {
   }
 
   // If the date is equals to 'corpus-christi' OR 'carnival', switch the algorithm
-  if (date.trim() === 'corpus-christi' || date.trim() === 'carnival') {
+  if (date.trim() === 'corpus-christi') {
     createCorpusChristi(req, res);
+    return
+  }
+  if(date.trim() === 'carnival'){
+    createCarnival(req, res);
     return
   }
 
@@ -239,17 +320,4 @@ exports.delete = async (req, res) => {
   }
 
   res.status(404).send()
-};
-
-createCorpusChristi = async (req, res) => {
-
-  const region = await Region.findByPk(req.params.code);
-
-  if (region) {
-    await region.update({corpusChristi: true});
-    res.status(200).send(region);
-  } else {
-    res.status(404).send()
-  }
-
 };
