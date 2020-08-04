@@ -1,5 +1,6 @@
 const db = require("../../domain/entities");
 const Holiday = db.holidays;
+const Region = db.regions;
 const Op = db.Sequelize.Op;
 
 // Find a single Holiday with an id
@@ -55,8 +56,13 @@ exports.find = async (req, res) => {
   //
   // let goodFridayString = await getGoodFridayStringFromEasterString(easterString);
 
-  if (await isGoodFriday(date)){
+  if (await isGoodFriday(date)) {
     res.status(200).json({name: "Sexta-Feira Santa"});
+    return
+  }
+
+  if (await isCorpusChristi(date)) {
+    res.status(200).json({name: "Corpus Christi"});
     return
   }
 
@@ -81,10 +87,29 @@ getGoodFridayStringFromEasterString = async (easterString) => {
 
   goodFriday.setDate(goodFriday.getDate() - 2);
 
-  const goodFridayString = goodFriday.toLocaleDateString().substring(0, 10); //.replace(/\//g, '-');
+  return goodFriday.toLocaleDateString().substring(0, 10); //.replace(/\//g, '-');
+};
 
-  return goodFridayString;
-}
+isCorpusChristi = async (date) => {
+  const year = date.substring(0, 4);
+  date = new Date(date.split("-"));
+
+  let easterString = await getEasterByYear(year);
+
+  const dateString = new Date(date).toLocaleDateString()
+  const corpusChristiString = new Date((await getCorpusChristiStringFromEasterString(easterString)).split("-")).toLocaleDateString();
+
+  return dateString === corpusChristiString
+};
+
+getCorpusChristiStringFromEasterString = async (easterString) => {
+
+  const corpusChristi = new Date(easterString.split("-"));
+
+  corpusChristi.setDate(corpusChristi.getDate() + 60);
+
+  return corpusChristi.toLocaleDateString().substring(0, 10); //.replace(/\//g, '-');
+};
 
 getEasterByYear = async (year) => {
   const {QueryTypes} = require('sequelize');
@@ -97,20 +122,39 @@ getEasterByYear = async (year) => {
   )
 
   return resulted[0].easter
-}
+};
 
 // Update a Holiday by the id in the request
 exports.update = async (req, res) => {
 
-  const holidayName = req.body.name;
-  if (!holidayName)
-    res.status(400).send("The holiday name must be informed")
+  // console.log('req.params.date', req.params.date)
+  // console.log('req.params.date === \'corpus-christi\'', req.params.date === 'corpus-christi');
 
-  const code = req.params.code;
+  // Validate if has date param
   const date = req.params.date;
+  if (!date) {
+    res.status(400).send("The holiday date must be informed");
+    return
+  }
 
+  // If the date is equals to 'corpus-christi' OR 'carnival', switch the algorithm
+  if (date.trim() === 'corpus-christi' || date.trim() === 'carnival') {
+    createCorpusChristi(req, res);
+    return
+  }
+
+  // else
   const month = date.substring(0, 2)
   const day = date.substring(3, 5)
+
+  // Validate region code
+  const code = req.params.code;
+
+  const holidayName = req.body.name;
+  if (!holidayName) {
+    res.status(400).send("The holiday name must be informed");
+    return;
+  }
 
   // Find holiday, if it not found, create them.
   const [holiday, created] = await Holiday.findOrCreate({
@@ -188,4 +232,17 @@ exports.delete = async (req, res) => {
   }
 
   res.status(404).send()
+};
+
+createCorpusChristi = async (req, res) => {
+
+  const region = await Region.findByPk(req.params.code);
+
+  if (region) {
+    await region.update({corpusChristi: true});
+    res.status(200).send(region);
+  } else {
+    res.status(404).send()
+  }
+
 };

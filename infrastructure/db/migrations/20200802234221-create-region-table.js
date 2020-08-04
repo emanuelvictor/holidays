@@ -15,7 +15,8 @@ module.exports = {
       carnival: {
         type: Sequelize.BOOLEAN
       },
-      corpus_christi: {
+      corpusChristi: {
+        field: 'corpus_christi',
         type: Sequelize.BOOLEAN
       },
       createdAt: {

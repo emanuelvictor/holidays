@@ -26,7 +26,8 @@ module.exports = (sequelize, DataTypes) => {
     carnival: {
       type: DataTypes.BOOLEAN
     },
-    corpus_christi: {
+    corpusChristi: {
+      field: 'corpus_christi',
       type: DataTypes.BOOLEAN
     },
     upperRegionCode: {
