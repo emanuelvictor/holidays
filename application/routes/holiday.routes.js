@@ -3,9 +3,6 @@ module.exports = app => {
 
   const router = require("express").Router();
 
-  // Retrieve all Holidays
-  router.get("/holidays/", holidays.findAll);
-
   // Retrieve a holiday
   router.get("/feriados/:code/:date", holidays.find);
 
@@ -14,9 +11,6 @@ module.exports = app => {
 
   // Delete a Holiday with id
   router.delete("/feriados/:code/:date", holidays.delete);
-
-  //
-  router.get("/holidays/:start/:end", holidays.getEasterByYear);
 
   app.use(router);
 };
