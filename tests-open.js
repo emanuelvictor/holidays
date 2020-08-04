@@ -136,4 +136,30 @@ export default () => {
       }
     );
   });
+  group('Corpus Christi Foz do Iguaçu', function () {
+
+    // Consulta feriado móvel municipal, feriado não existe para esse município
+    let query1 = http.get(`${BASE_URL}/feriados/4108304/2020-06-11/`);
+    check(query1, {
+      'consulta deve retornar 404': (r) => r.status === 404
+    });
+    check(query1.json(),
+      {
+        'Feriado não encontrado para essa região':
+          (obj) => obj === 'Holiday not found',
+      }
+    );
+
+    // Consulta deve retornar região inexistente
+    let query2 = http.get(`${BASE_URL}/feriados/90/2021-06-03/`);
+    check(query2, {
+      'consulta deve retornar 400': (r) => r.status === 400
+    });
+    check(query2.json(),
+      {
+        'Região Inexistente':
+          (obj) => obj === 'Region not found',
+      }
+    );
+  });
 }

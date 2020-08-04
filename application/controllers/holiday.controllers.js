@@ -3,10 +3,72 @@ const Holiday = db.holidays;
 const Region = db.regions;
 const Op = db.Sequelize.Op;
 
+isGoodFriday = async (date) => {
+  const year = date.substring(0, 4);
+  date = new Date(date.split("-"));
+
+  let easterString = await getEasterByYear(year);
+
+  const dateString = new Date(date).toLocaleDateString()
+  const goodFridayString = new Date((await getGoodFridayStringFromEasterString(easterString)).split("-")).toLocaleDateString();
+
+  return dateString === goodFridayString
+};
+
+getGoodFridayStringFromEasterString = async (easterString) => {
+
+  const goodFriday = new Date(easterString.split("-"));
+
+  goodFriday.setDate(goodFriday.getDate() - 2);
+
+  return goodFriday.toLocaleDateString().substring(0, 10); //.replace(/\//g, '-');
+};
+
+isCorpusChristi = async function (code, date) {
+  const year = date.substring(0, 4);
+  date = new Date(date.split("-"));
+
+  let easterString = await getEasterByYear(year);
+
+  const dateString = new Date(date).toLocaleDateString()
+  const corpusChristiString = new Date((await getCorpusChristiStringFromEasterString(easterString)).split("-")).toLocaleDateString();
+
+  const region = (await Region.findByPk(code));
+
+  if (!region) {
+    return 'Region not found';
+  }
+
+  return region && region.corpusChristi && dateString === corpusChristiString
+};
+
+getCorpusChristiStringFromEasterString = async (easterString) => {
+
+  const corpusChristi = new Date(easterString.split("-"));
+
+  corpusChristi.setDate(corpusChristi.getDate() + 60);
+
+  return corpusChristi.toLocaleDateString().substring(0, 10); //.replace(/\//g, '-');
+};
+
+getEasterByYear = async (year) => {
+  const {QueryTypes} = require('sequelize');
+
+  const resulted = await db.sequelize.query(
+    'select easter from get_easter_by_year( ' + year + ' ) as easter',
+    {
+      type: QueryTypes.SELECT
+    }
+  )
+
+  return resulted[0].easter
+};
+
+
 // Find a single Holiday with an id
 exports.find = async (req, res) => {
-  let code = req.params.code;
-  const date = req.params.date;
+  let code = (' ' + req.params.code).slice(1); // Copy without reference
+  const date = (' ' + req.params.date).slice(1);
   const month = date.substring(5, 7);
   const day = date.substring(8, 10);
   const year = date.substring(0, 4);
@@ -52,83 +114,28 @@ exports.find = async (req, res) => {
     }
   }
 
-  // let easterString = await getEasterByYear(year);
-  //
-  // let goodFridayString = await getGoodFridayStringFromEasterString(easterString);
-
+  // Verify good friday
   if (await isGoodFriday(date)) {
     res.status(200).json({name: "Sexta-Feira Santa"});
     return
   }
 
-  if (await isCorpusChristi(date)) {
+  // Verify corpus christi
+  if ((await isCorpusChristi(req.params.code, date)) === true) {
     res.status(200).json({name: "Corpus Christi"});
+    return
+  } else if ((await isCorpusChristi(req.params.code, date)) === 'Region not found') {
+    res.status(400).json('Region not found');
     return
   }
 
-  res.status(404).send()
-};
+  // Verify corpus carnival
 
-isGoodFriday = async (date) => {
-  const year = date.substring(0, 4);
-  date = new Date(date.split("-"));
-
-  let easterString = await getEasterByYear(year);
-
-  const dateString = new Date(date).toLocaleDateString()
-  const goodFridayString = new Date((await getGoodFridayStringFromEasterString(easterString)).split("-")).toLocaleDateString();
-
-  return dateString === goodFridayString
-};
-
-getGoodFridayStringFromEasterString = async (easterString) => {
-
-  const goodFriday = new Date(easterString.split("-"));
-
-  goodFriday.setDate(goodFriday.getDate() - 2);
-
-  return goodFriday.toLocaleDateString().substring(0, 10); //.replace(/\//g, '-');
-};
-
-isCorpusChristi = async (date) => {
-  const year = date.substring(0, 4);
-  date = new Date(date.split("-"));
-
-  let easterString = await getEasterByYear(year);
-
-  const dateString = new Date(date).toLocaleDateString()
-  const corpusChristiString = new Date((await getCorpusChristiStringFromEasterString(easterString)).split("-")).toLocaleDateString();
-
-  return dateString === corpusChristiString
-};
-
-getCorpusChristiStringFromEasterString = async (easterString) => {
-
-  const corpusChristi = new Date(easterString.split("-"));
-
-  corpusChristi.setDate(corpusChristi.getDate() + 60);
-
-  return corpusChristi.toLocaleDateString().substring(0, 10); //.replace(/\//g, '-');
-};
-
-getEasterByYear = async (year) => {
-  const {QueryTypes} = require('sequelize');
-
-  const resulted = await db.sequelize.query(
-    'select easter from get_easter_by_year( ' + year + ' ) as easter',
-    {
-      type: QueryTypes.SELECT
-    }
-  )
-
-  return resulted[0].easter
+  res.status(404).json('Holiday not found');
 };
 
 // Update a Holiday by the id in the request
 exports.update = async (req, res) => {
-
-  // console.log('req.params.date', req.params.date)
-  // console.log('req.params.date === \'corpus-christi\'', req.params.date === 'corpus-christi');
 
   // Validate if has date param
   const date = req.params.date;

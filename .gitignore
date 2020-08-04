@@ -26,6 +26,8 @@ package-lock.json
 !.vscode/launch.json
 !.vscode/extensions.json
 
+k6.exe
+
 # misc
 /.sass-cache
 /connect.lock
