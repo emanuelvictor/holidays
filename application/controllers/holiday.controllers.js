@@ -117,6 +117,18 @@ createCorpusChristi = async (req, res) => {
 
 };
 
+deleteCorpusChristi = async (req, res) => {
+  const region = await Region.findByPk(req.params.code);
+
+  if (region && region.corpusChristi) {
+    await region.update({corpusChristi: false});
+    res.status(204).send();
+  } else {
+    res.status(404).send()
+  }
+
+};
+
 createCarnival = async (req, res) => {
 
   const region = await Region.findByPk(req.params.code);
@@ -130,8 +142,27 @@ createCarnival = async (req, res) => {
 
 };
 
+deleteCarnival = async (req, res) => {
+  const region = await Region.findByPk(req.params.code);
+
+  if (region && region.carnival) {
+    await region.update({carnival: false});
+    res.status(204).send();
+  } else {
+    res.status(404).send()
+  }
+
+};
+
 // Find a single Holiday with an id
 exports.find = async (req, res) => {
+  console.log('find');
+  // Validate if has date param
+  if (!req.params.date) {
+    res.status(400).send("The holiday date must be informed");
+    return
+  }
+
   let code = (' ' + req.params.code).slice(1); // Copy without reference
   const date = (' ' + req.params.date).slice(1);
   const month = date.substring(5, 7);
@@ -195,7 +226,7 @@ exports.find = async (req, res) => {
     res.status(200).json({name: "Corpus Christi"});
     return
   } else if ((await isCorpusChristi(req.params.code, date)) === 'Region not found') {
-    res.status(400).json('Region not found');
+    res.status(404).json('Region not found');
     return
   }
 
@@ -204,7 +235,7 @@ exports.find = async (req, res) => {
     res.status(200).json({name: "Carnaval"});
     return
   } else if ((await isCarnival(req.params.code, date)) === 'Region not found') {
-    res.status(400).json('Region not found');
+    res.status(404).json('Region not found');
     return
   }
 
@@ -215,19 +246,19 @@ exports.find = async (req, res) => {
 exports.update = async (req, res) => {
 
   // Validate if has date param
-  const date = req.params.date;
-  if (!date) {
+  if (!req.params.date) {
     res.status(400).send("The holiday date must be informed");
     return
   }
 
+  const date = req.params.date;
   // If the date is equals to 'corpus-christi' OR 'carnival', switch the algorithm
   if (date.trim() === 'corpus-christi') {
-    createCorpusChristi(req, res);
+    await createCorpusChristi(req, res);
     return
   }
   if(date.trim() === 'carnival'){
-    createCarnival(req, res);
+    await createCarnival(req, res);
     return
   }
 
@@ -269,11 +300,27 @@ exports.update = async (req, res) => {
 
 // Delete a Holiday with the specified id in the request
 exports.delete = async (req, res) => {
+console.log('delete');
+  // Validate if has date param
+  if (!req.params.date) {
+    res.status(400).send("The holiday date must be informed");
+    return
+  }
 
-  let code = req.params.code;
-  const date = req.params.date;
-  const month = date.substring(0, 2);
+  let code = (' ' + req.params.code).slice(1); // Copy without reference
+  const date = (' ' + req.params.date).slice(1);
+  const month =  date.substring(0, 2);
   const day = date.substring(3, 5);
+
+  // If the date is equals to 'corpus-christi' OR 'carnival', switch the algorithm
+  if (date.trim() === 'corpus-christi') {
+    await deleteCorpusChristi(req, res);
+    return
+  }
+  if(date.trim() === 'carnival'){
+    await deleteCarnival(req, res);
+    return
+  }
 
   const [holiday] = await Holiday.findAll({
     where: {regionCode: code, month: month, day: day}

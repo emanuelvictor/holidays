@@ -136,6 +136,24 @@ export default () => {
         (obj) => obj.name === 'Corpus Christi',
       }
     );
+
+    // Deleta o Corpus Christi
+    const deleteCorpusChristi = http.del(`${BASE_URL}/feriados/3146107/corpus-christi/`);
+    check(deleteCorpusChristi, {
+      'A deleção de Corpus Christi deve retornar 204': (r) => r.status === 204
+    });
+
+    // Deleta o Corpus Christi Inexistente
+    const deleteCorpusChristiInexistente = http.del(`${BASE_URL}/feriados/31/corpus-christi/`);
+    check(deleteCorpusChristiInexistente, {
+      'A deleção de Corpus Christi Inexistente deve retornar 404': (r) => r.status === 404
+    });
+
+    // Deleta o Corpus Christi com Região Inexistente
+    const deleteCorpusChristiRegiaoInexistente = http.del(`${BASE_URL}/feriados/90/corpus-christi/`);
+    check(deleteCorpusChristiRegiaoInexistente, {
+      'A deleção de Corpus Christi Com Região Inexistente deve retornar 404': (r) => r.status === 404
+    });
   });
 
   group('Carnaval Ouro Preto', function () {
@@ -158,6 +176,12 @@ export default () => {
       }
     );
 
+    // Deleta o carnaval
+    const deleteCarnaval = http.del(`${BASE_URL}/feriados/3146107/carnival/`);
+    check(deleteCarnaval, {
+      'A deleção de carnaval deve retornar 204': (r) => r.status === 204
+    });
+
     // Busca o carnaval em Minas Gerais
     let query2 = http.get(`${BASE_URL}/feriados/31/2023-02-21/`);
     check(query2, {
@@ -169,6 +193,18 @@ export default () => {
           (obj) => obj === 'Holiday not found',
       }
     );
+
+    // Deleta o carnaval Inexistente
+    const deleteCarnavalInexistente = http.del(`${BASE_URL}/feriados/31/carnival/`);
+    check(deleteCarnavalInexistente, {
+      'A deleção de carnaval inexistente deve retornar 404': (r) => r.status === 404
+    });
+
+    // Deleta carnaval com região Inexistente
+    const deleteCarnavalRegiaoInexistente = http.del(`${BASE_URL}/feriados/90/carnival/`);
+    check(deleteCarnavalRegiaoInexistente, {
+      'A deleção de carnaval com região inexistente deve retornar 404': (r) => r.status === 404
+    });
   });
 
   group('Foz do Iguaçu', function () {
@@ -188,7 +224,7 @@ export default () => {
     // Consulta deve retornar região inexistente
     let query2 = http.get(`${BASE_URL}/feriados/90/2021-06-03/`);
     check(query2, {
-      'consulta deve retornar 400': (r) => r.status === 400
+      'consulta deve retornar 404': (r) => r.status === 404
     });
     check(query2.json(),
       {
