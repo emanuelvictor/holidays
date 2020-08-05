@@ -1,33 +1,9 @@
-const db = require("../../domain/entities");
-const Region = db.regions;
-const Op = db.Sequelize.Op;
+const regionService = require("../../domain/services/region.service");
 
-
-// Retrieve all Holidays from the database.
-exports.findAll = (req, res) => {
-  Region.findAll()
-    .then(data => {
-      res.send(data);
-    })
-    .catch(err => {
-      res.status(500).send({
-        message:
-          err.message || "Some error occurred while retrieving holidays."
-      });
-    });
+exports.findAll = async (req, res) => {
+  res.send(await regionService.findAll())
 };
 
-// Find a single Holiday with an id
-exports.findOne = (req, res) => {
-  const id = req.params.code;
-
-  Region.findByPk(id)
-    .then(data => {
-      res.send(data);
-    })
-    .catch(err => {
-      res.status(500).send({
-        message: "Error retrieving Holiday with id=" + id
-      });
-    });
+exports.findOne = async (req, res) => {
+  res.send(await regionService.findOne(req.params.code))
 };

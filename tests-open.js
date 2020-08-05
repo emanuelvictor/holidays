@@ -182,6 +182,12 @@ export default () => {
       'A deleção de carnaval deve retornar 204': (r) => r.status === 204
     });
 
+    // Deleta o carnaval
+    const carnavalInexistente = http.get(`${BASE_URL}/feriados/3146107/2023-02-21/`);
+    check(carnavalInexistente, {
+      'O carnaval foi recém deletado, deve retonrar 404': (r) => r.status === 404
+    });
+
     // Busca o carnaval em Minas Gerais
     let query2 = http.get(`${BASE_URL}/feriados/31/2023-02-21/`);
     check(query2, {
@@ -252,8 +258,83 @@ export default () => {
     });
     check(query4.json(),
       {
-        'Páscoa':
+        'É pascoa no Paraná':
           (obj) => obj.name === 'Páscoa'
+      }
+    );
+
+    // Consulta deve retornar páscoa no Paraná
+    let query5 = http.get(`${BASE_URL}/feriados/41/2020-12-25/`);
+    check(query5, {
+      'Procurando o Natal no Paraná, deve retornar 200': (r) => r.status === 200
+    });
+    check(query5.json(),
+      {
+        'É natal no Paraná':
+          (obj) => obj.name === 'Natal'
+      }
+    );
+
+    // Consulta deve retornar páscoa em Foz do Iguaçu
+    let query6 = http.get(`${BASE_URL}/feriados/4108304/2020-12-25/`);
+    check(query6, {
+      'Procurando o Natal em Foz do Iguaçu, deve retornar 200': (r) => r.status === 200
+    });
+    check(query6.json(),
+      {
+        'É natal em Foz do Iguaçu':
+          (obj) => obj.name === 'Natal'
+      }
+    );
+  });
+
+  group('Validações', function () {
+
+    // Data inválida, deve retornar 400
+    let query1 = http.get(`${BASE_URL}/feriados/4108304/12-25-2020/`);
+    check(query1, {
+      'Data inválida, deve retornar 400': (r) => r.status === 400
+    });
+    check(query1.json(),
+      {
+        'Invalid or malformed date. The date must follow \'YYYY-MM-DD\' format':
+          (obj) => obj === 'Invalid or malformed date. The date must follow \'YYYY-MM-DD\' format'
+      }
+    );
+
+    // Invalid or malformed date. The month must be minor or equals to '31'
+    let query2 = http.get(`${BASE_URL}/feriados/1600501/2020-05-50/`);
+    check(query2, {
+      'Invalid or malformed date. The day must be minor or equals to \'31\'': (r) => r.status === 400
+    });
+    check(query2.json(),
+      {
+        'Invalid or malformed date. The day must be minor or equals to \'31\'':
+          (obj) => obj === 'Invalid or malformed date. The day must be minor or equals to \'31\''
+      }
+    );
+
+    // Invalid or malformed date. The month must be minor or equals to '1'
+    let query3 = http.get(`${BASE_URL}/feriados/1600501/2020-05-0/`);
+    check(query3, {
+      'Invalid or malformed date. The day must be major or equals to \'1\'': (r) => r.status === 400
+    });
+    check(query3.json(),
+      {
+        'Invalid or malformed date. The day must be major or equals to \'1\'':
+          (obj) => obj === 'Invalid or malformed date. The day must be major or equals to \'1\''
+      }
+    );
+
+    // Invalid or malformed date. The month must be major or equals to '1'
+    let query4 = http.get(`${BASE_URL}/feriados/1600501/2020-00-01/`);
+    check(query4, {
+      'Invalid or malformed date. The month month be major or equals to \'1\'': (r) => r.status === 400
+    });
+    check(query4.json(),
+      {
+        'Invalid or malformed date. The month must be major or equals to \'1\'':
+          (obj) => obj === 'Invalid or malformed date. The month must be major or equals to \'1\''
       }
     );
   });

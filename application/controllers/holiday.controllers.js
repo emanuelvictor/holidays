@@ -1,10 +1,11 @@
 const db = require("../../domain/entities");
+const utils = require("../../infrastructure/aid/utils");
 const Holiday = db.holidays;
 const Region = db.regions;
-const Op = db.Sequelize.Op;
 
 isEaster = async (date) => {
-  const year = date.substring(0, 4);
+
+  const year = utils.extractYearFromDate(date);
   date = new Date(date.split("-"));
 
   let easterString = await getEasterByYear(year);
@@ -16,7 +17,8 @@ isEaster = async (date) => {
 };
 
 isGoodFriday = async (date) => {
-  const year = date.substring(0, 4);
+
+  const year = utils.extractYearFromDate(date);
   date = new Date(date.split("-"));
 
   let easterString = await getEasterByYear(year);
@@ -37,7 +39,8 @@ getGoodFridayStringFromEasterString = async (easterString) => {
 };
 
 isCorpusChristi = async function (code, date) {
-  const year = date.substring(0, 4);
+
+  const year = utils.extractYearFromDate(date);
   date = new Date(date.split("-"));
 
   let easterString = await getEasterByYear(year);
@@ -65,7 +68,8 @@ getCorpusChristiStringFromEasterString = async (easterString) => {
 
 
 isCarnival = async function (code, date) {
-  const year = date.substring(0, 4);
+
+  const year = utils.extractYearFromDate(date);
   date = new Date(date.split("-"));
 
   let easterString = await getEasterByYear(year);
@@ -88,10 +92,11 @@ getCarnivalStringFromEasterString = async (easterString) => {
 
   carnival.setDate(carnival.getDate() - 47);
 
-  return carnival.toLocaleDateString().substring(0, 10); //.replace(/\//g, '-');
+  return carnival.toLocaleDateString().substring(0, 10) //.replace(/\//g, '-');
 };
 
 getEasterByYear = async (year) => {
+
   const {QueryTypes} = require('sequelize');
 
   const resulted = await db.sequelize.query(
@@ -114,10 +119,10 @@ createCorpusChristi = async (req, res) => {
   } else {
     res.status(404).send()
   }
-
 };
 
 deleteCorpusChristi = async (req, res) => {
+
   const region = await Region.findByPk(req.params.code);
 
   if (region && region.corpusChristi) {
@@ -126,7 +131,6 @@ deleteCorpusChristi = async (req, res) => {
   } else {
     res.status(404).send()
   }
-
 };
 
 createCarnival = async (req, res) => {
@@ -139,10 +143,10 @@ createCarnival = async (req, res) => {
   } else {
     res.status(404).send()
   }
-
 };
 
 deleteCarnival = async (req, res) => {
+
   const region = await Region.findByPk(req.params.code);
 
   if (region && region.carnival) {
@@ -151,22 +155,19 @@ deleteCarnival = async (req, res) => {
   } else {
     res.status(404).send()
   }
-
 };
 
 // Find a single Holiday with an id
 exports.find = async (req, res) => {
-  console.log('find');
+
   // Validate if has date param
-  if (!req.params.date) {
-    res.status(400).send("The holiday date must be informed");
-    return
-  }
+  if(utils.validateDate(req, res) !== true)
+    return;
 
   let code = (' ' + req.params.code).slice(1); // Copy without reference
   const date = (' ' + req.params.date).slice(1);
-  const month = date.substring(5, 7);
-  const day = date.substring(8, 10);
+  const month = utils.extractMonthFromRequest(req, res);
+  const day = utils.extractDayFromRequest(req, res);
 
   const [holiday] = await Holiday.findAll({
     where: {regionCode: code, month: month, day: day}
@@ -244,12 +245,9 @@ exports.find = async (req, res) => {
 
 // Update a Holiday by the id in the request
 exports.update = async (req, res) => {
-
   // Validate if has date param
-  if (!req.params.date) {
-    res.status(400).send("The holiday date must be informed");
-    return
-  }
+  if(utils.validateDate(req, res) !== true)
+    return;
 
   const date = req.params.date;
   // If the date is equals to 'corpus-christi' OR 'carnival', switch the algorithm
@@ -263,8 +261,8 @@ exports.update = async (req, res) => {
   }
 
   // else
-  const month = date.substring(0, 2)
-  const day = date.substring(3, 5)
+  const month = utils.extractMonthFromRequest(req, res);
+  const day = utils.extractDayFromRequest(req, res);
 
   // Validate region code
   const code = req.params.code;
@@ -300,17 +298,14 @@ exports.update = async (req, res) => {
 
 // Delete a Holiday with the specified id in the request
 exports.delete = async (req, res) => {
-console.log('delete');
   // Validate if has date param
-  if (!req.params.date) {
-    res.status(400).send("The holiday date must be informed");
-    return
-  }
+  if(utils.validateDate(req, res) !== true)
+    return;
 
   let code = (' ' + req.params.code).slice(1); // Copy without reference
   const date = (' ' + req.params.date).slice(1);
-  const month =  date.substring(0, 2);
-  const day = date.substring(3, 5);
+  const month = utils.extractMonthFromRequest(req, res);
+  const day = utils.extractDayFromRequest(req, res);
 
   // If the date is equals to 'corpus-christi' OR 'carnival', switch the algorithm
   if (date.trim() === 'corpus-christi') {
