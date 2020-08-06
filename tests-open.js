@@ -9,6 +9,7 @@ export let options = {
 const BASE_URL = __ENV.API_BASE;
 const HEADERS = {'Content-Type': 'application/json'};
 
+
 export default () => {
   group('Dia do Trabalhador', function() {
     // Do Oiapoque ao Chuí 01/05 é Dia do Trabalhador no Brasil
